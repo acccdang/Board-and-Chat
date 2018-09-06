@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/tags/header :: header">
+<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+</head>
+
+<body>
+	<div th:replace="/tags/scripts :: scripts"></div>
+	
+	<div class="container">
+		<div class="col-xs-12" style="margin:15px auto;">
+			<label style="font-size:30px;"><span class="glyphicon glyphicon-edit"></span> 게시글 작성</label>
+		</div>
+		
+	
+		<div class="col-xs-12">
+			<form action="/board/post/create.process" method="post">
+				<div class="form-group">
+					<div class="form-check form-check-inline">
+						<input type="radio" class="form-check-input" id="category_notice" name="category" value="notice"/>
+						<label class="form-check-label" for="category_notice">공지</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input type="radio" class="form-check-input" id="category_common" name="category" value="common" checked/>
+						<label class="form-check-label" for="category_common">일반</label>
+					</div>
+				</div>
+				
+				<div class="form-group">
+					<label for="title">제목</label>
+					<input type="text" class="form-control" name="title" placeholder="제목을 입력하세요.."/>
+				</div>
+				
+				<div class="form-group">
+					<label for="writer">작성자</label>
+					<input type="text" class="form-control" name="writer" placeholder="이름을 입력하세요.."/>
+				</div>
+				
+				<div class="form-group" style="display: inline; min-width: 1200px;">
+					<label for="content">내용</label>
+					<textarea class="form-control" style="resize: none;" name="content" rows="10"></textarea>
+				</div>
+				
+				<div class="form-group">
+					<label for="password">비밀번호</label>
+					<input type="password" class="form-control" name="password" placeholder="패스워드를 입력하세요.."/>
+				</div>
+				
+				<button type="submit" class="btn btn-primary btn-sm" style="float:right;">작성</button>
+			</form>
+		</div>
+	</div>
+	
+</body>
+</html>

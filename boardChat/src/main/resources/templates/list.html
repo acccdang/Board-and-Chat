@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="/tags/header :: header">
+<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+</head>
+
+<body>
+	<nav th:replace="/tags/navbar :: navbar"></nav>
+	<div th:replace="/tags/scripts :: scripts"></div>
+	
+	<script type="text/javascript">
+	
+		var dateCount = 1;
+	
+		$(document).ready(function() {
+			$("#board").attr("class", "nav-link active");
+			$("#chat").attr("class", "nav-link");
+		});
+	</script>
+
+	<div class="container-fluid">
+		<div class="col-xs-12" style="margin:15px auto;">
+			<label style="font-size:30px;"><span class="glyphicon glyphicon-list-alt"></span> 게시글 목록</label>
+		</div>	
+		
+		<div class="row" style="margin-bottom: 20px;">
+			<div class="col-xs-4 justify-content-">
+				<form class="form-inline" id="searchForm">
+					<select name="categoryOption" id="categoryOption" class="form-control">
+						<option value="category_all">전체</option>
+						<option value="category_notice">공지</option>
+						<option value="category_common">일반</option>
+					</select>
+					
+					<select name="searchOption" id="searchOption" class="form-control">
+						<option value="search_all">전체</option>
+						<option value="search_title">제목</option>
+						<option value="search_content">내용</option>
+						<option value="search_writer">작성자</option>
+					</select>
+					
+					<div class="input-group custom-search-form">
+						<input type="text" class="form-control" id="search" placeholder="검색 키워드를 입력하세요.."/>		
+							<span class="input-group-btn">
+								<button class="btn btn-default" type="button" id="searchBtn">검색</button>							
+							</span>			
+					</div>
+					
+					<input type="hidden" id="category" value="all">
+					<input type="hidden" id="option" value="all"/>
+				</form>
+			</div>
+		</div>
+		<script type="text/javascript" src="/js/search_jS.js"></script>
+
+		<div class="col-xs-12" style="margin:15px auto;">
+			<strong>총</strong>
+			<strong style="color: red;" th:text="${postCount}">N</strong>
+			<strong>개의 게시글이 있습니다.</strong>
+			<button class="btn btn-primary btn-xs" style="float:right;" onclick="location.href='/board/write'">글쓰기</button>
+		</div>	
+		
+		<script type="text/javascript" th:inline="javascript">
+			/*<![CDATA[*/
+				$(document).ready(function() {
+					var postCount = /*[[${postCount}]]*/;
+					if(postCount == 0) {
+						alert("조건에 맞는 게시글이 없습니다.");
+						location.href = "/board/list";
+					}	
+				});
+			/*]]>*/
+		</script>
+		
+		<div class="col-xs-12" style="margin:15px auto;">
+			<table class="table table-hover"> 
+				<thead>
+					<tr style="font-size: 120%; font-weight: bold;">
+						<th>번호</th>
+						<th>제목</th>
+						<th>작성자</th>
+						<th>작성일</th>
+					</tr>
+				</thead>
+				
+				<tbody>
+					<th:block th:each="notice : ${noticeList}">
+						<tr class="table-warning" style="font-weight: bold;">
+							<td style="width: 2%;" th:text="${notice.id}">ID</td>
+							<td style="width: 15%;">
+								<span style="color: red;">[공지]</span>
+								<a th:href="@{|/board/view?id=${notice.id}|}"><th:block th:text="${notice.title}">제목</th:block></a>
+								<span><label style="color: gray; font-size: 80%" th:text="@{|(${notice.commentCount})|}">댓글 수</label></span>
+								<span><img id="new_icon" src="" width="40"/></span>
+							</td>
+							<td style="width: 5%;" th:text="${notice.writer}">작성자</td>
+							<td id="notice_date" style="width: 5%;" th:text="${notice.ctime}">작성 날짜</td>
+						</tr>
+						<script type="text/javascript" th:inline="javascript">
+							/*<![CDATA[*/
+								var createdDate = new Date(/*[[${notice.ctime}]]*/);
+								var date = new Date();
+								
+								/* new icon */
+								var diff = (date.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+								
+								$("#new_icon").attr("id", "new_icon_" + dateCount);
+								
+								if(diff < 1)
+									$("#new_icon_" + dateCount).attr("src", "/image/newIcon.png")
+								else
+									$("#new_icon_" + dateCount).attr("src", "");
+								
+								$("#notice_date").attr("id", "notice_date_" + dateCount);
+								
+								/* new icon 끝 */		
+								
+								dateCount++;
+							/*]]>*/
+						</script>
+						
+					</th:block>
+				
+					<th:block th:each="post : ${postList}">
+						<tr>
+							<td style="width: 2%;" th:text="${post.id}">ID</td>
+							<td style="width: 15%;">
+								<span th:if="${post.category == 'notice'}" style="color: red;">[공지]</span>
+								<span th:if="${post.category == 'common'}" style="color: gray;">[일반]</span>
+								<a th:href="@{|/board/view?id=${post.id}|}"><th:block th:text="${post.title}">제목</th:block></a>
+								<span><label style="color: gray;" th:text="@{|(${post.commentCount})|}">댓글 수</label></span>
+							</td>
+							<td style="width: 5%;" th:text="${post.writer}">작성자</td>
+							<td style="width: 5%;" th:text="${#dates.format(post.ctime, 'yy/MM/dd, HH:mm')}">작성 날짜</td>
+						</tr>
+					</th:block>
+				</tbody>
+			</table>
+		</div>
+		
+		<nav aria-label="Page navigation example">
+			<ul class="pagination justify-content-center">
+				<li class="page-item disabled" id="page_previous">
+					<a class="page-link" id="a_previous" href="#" tabindex="-1">이전</a>
+				</li>
+				<th:block th:each="pageCount : ${#numbers.sequence(1, pageCount)}">
+					<li class="page-item" th:id="@{|page_${pageCount}|}">
+						<a class="page-link" th:href="@{|/board/list?page=${pageCount}&category=${category}&option=${option}&search=${search}}" 
+							th:text="${pageCount}">pageNumber<span class="sr-only">(current)</span></a>
+					</li>
+				</th:block>
+				<li class="page-item" id="page_next">
+					<a class="page-link" id="a_next" href="#">다음</a>
+				</li>
+			</ul>
+		</nav>
+		
+		<script type="text/javascript" th:inline="javascript">
+			/*<![CDATA[*/
+				$(document).ready(function() {
+					var page = /*[[${page}]]*/;
+					var category = /*[[${category}]]*/;
+					var option = /*[[${option}]]*/;
+					var search = /*[[${search}]]*/;
+					
+					$("#page_" + page).attr("class", "page-item active");
+					
+					if(page == 1)
+						$("#page_previous").attr("class", "page-item disabled");
+					else {
+						$("#page_previous").attr("class", "page-item");
+						$("#a_previous").attr("href", "/board/list?page=" + (page - 1) + "&category=" + category
+								+ "&option=" + option + "&search=" + search);
+					}
+						
+					
+					if(page == /*[[${pageCount}]]*/)
+						$("#page_next").attr("class", "page-item disabled");
+					else {
+						$("#page_next").attr("class", "page-item");
+						$("#a_next").attr("href", "/board/list?page=" + (page + 1) + "&category=" + category 
+								+ "&option=" + option + "&search=" + search);
+					}
+						
+				})
+			/*]]>*/
+		</script>
+	</div>
+
+	<div th:replace="/tags/footer :: footer"></div>
+</body>
+</html>

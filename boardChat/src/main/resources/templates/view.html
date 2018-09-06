@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/tags/header :: header">
+<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+</head>
+
+<body>
+	<div th:replace="/tags/scripts :: scripts"></div>
+
+	<div class="container">
+		<div class="col-xs-12" style="margin: 15px auto;">
+			<label style="font-size:30px;"><span class="glyphicon glyphicon-list-alt"></span> 게시글 상세</label>
+		</div>
+		
+		<div class="col-xs-12" >
+			<dl class="dl-horizontal" style="margin-bottom:10px;">
+				<dt>번호</dt>
+				<dd th:text="${post.id}"></dd>
+				
+				<dt>구분</dt>
+				<dd th:if="${post.category == 'notice'}">공지</dd>
+				<dd th:if="${post.category == 'common'}">일반</dd>
+			
+				<dt>제목</dt>
+				<dd th:text="${post.title}"></dd>
+				
+				<dt>작성자</dt>
+				<dd th:text="${post.writer}"></dd>
+				
+				<dt>작성날짜</dt>
+				<dd th:text="${#dates.format(post.ctime, 'yy/MM/dd, HH:mm:ss')}"></dd>
+				
+				<th:block th:if="${post.mtime != null}">
+					<dt>수정날짜</dt>
+					<dd th:text="${#dates.format(post.mtime, 'yy/MM/dd, HH:mm:ss')}"></dd>
+				</th:block>
+				
+				<dt>내용</dt>
+				<th:block th:each="content : ${post.contents}">
+					<dd th:text="${content}"></dd>
+				</th:block>
+				
+			</dl>		
+			
+			<div class="btn-group btn-group-sm" role="group" style="float:right;">
+				<button type="button" class="btn btn-outline-primary" id="modifyBtn" data-toggle="modal" data-target="#passwordCheck">수정</button>
+				<button type="button" class="btn btn-outline-danger" id="deleteBtn" data-toggle="modal" data-target="#passwordCheck">삭제</button>
+			</div>
+		</div>
+		
+		<!-- 코멘트 -->
+		<div class="container" style="margin-top:60px; margin-bottom:30px;">
+			<hr>
+			<strong>comment</strong>
+			<strong id="commentCount" style="color:red;"></strong>
+			<form id="commentInsert">
+				<div class="input-group" style="margin:15px auto;">
+					<input type="hidden" name="post_id" th:value="${post.id}"/>
+					<div class="row" style="float:right;">
+						<div class="col-xs-6">
+							<input type="text" class="form-control" id="comment_writer" name="writer" placeholder="이름"/>
+						</div>
+						<div class="col-xs-6">
+							<input type="password" class="form-control" id="comment_pwd" name="password" placeholder="패스워드"/>
+						</div>
+					</div>
+				</div>
+				
+				<div style="margin-top:15px; margin-bottom:50px;">
+					<textarea class="form-control" id="comment_content" name="content" rows="4" placeholder="내용을 입력하세요.."></textarea>
+					<button type="button" class="btn btn-primary" id="commentInsert_btn" style="float:right;">등록</button>					
+				</div>
+			</form>		
+		</div>
+
+		<hr>
+		<div class="container-fluid">
+			<div class="container">
+				<div id="commentList"></div>
+			</div>
+		</div>
+
+	</div>
+	
+	<!-- Modal : passwordCheck -->
+	<div class="modal fade" id="passwordCheck" tabindex="-1" role="dialog" aria-labelledby="passwordCheck" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">비밀번호 확인</h5>
+					<button type="button" class="close" name="pwdCheck_cancelBtn" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<form>
+						<div class="form-group">
+							<label for="pwdCheck_input" class="col-form-label">비밀번호 입력 : </label>
+							<input type="password" class="form-control" id="pwdCheck_input"/>
+							<label class="col-form-label" id="warningText"></label>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" id="pwdCheck_btn">확인</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal" name="pwdCheck_cancelBtn">취소</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript" th:inline="javascript">
+		/*<![CDATA[*/
+			
+			/* 패스워드 확인 관련 변수 */
+			var btnType; 
+			var password;
+			var target;
+			/* 패스워드 확인 관련 변수 끝*/
+			
+			/* 코멘트 관련 변수 */
+			var commentID;
+			var commentContent;
+			/* 코멘트 관련 변수 끝 */
+			
+			$(document).ready(function() {
+				
+				/* 패스워드 확인 관련 이벤트 */
+				
+				$("#passwordCheck").on("shown.bs.modal", function() {
+					$("#pwdCheck_input").trigger("focus");
+				});
+				
+				$("#passwordCheck").on("submit", function(event) {
+					event.preventDefault();
+					return false;
+				});
+				
+				$('#passwordCheck').keypress(function(event) {
+					if(event.keyCode == 13) {
+						$('#pwdCheck_btn').click();
+					}
+				});
+				
+				$("#pwdCheck_btn").click(function() {
+					
+					var tempPwd = $("#pwdCheck_input").val();
+
+					if(target == "post")
+						password = /*[[${post.password}]]*/;
+					
+					if(password == tempPwd) {
+						if(btnType == "modify") {
+							if(target == "post")
+								location.href = '/board/modify?id=' + /*[[${post.id}]]*/;
+							else if(target == "comment") {
+								commentUpdate(commentID, commentContent);
+								$("#passwordCheck").modal('hide');
+								$("#comment" + commentID + "_content").trigger("focus");
+							}
+						}						
+						else if(btnType == "delete") {
+							if(target == "post")
+								location.href = '/board/post/delete.process?id=' + /*[[${post.id}]]*/;
+							else if(target == "comment") {
+								commentDelete(commentID);
+								$("#passwordCheck").modal('hide');
+							}
+						}
+					}
+					else{
+						$("#warningText").fadeIn();
+						$("#warningText").text("비밀번호를 다시 입력해주세요.").css("color", "red").fadeOut(2000);
+						$("#pwdCheck_input").val("");
+					}
+						
+				});
+				
+				$("button[name=pwdCheck_cancelBtn]").click(function() {
+					$("#pwdCheck_input").val("");
+				});
+				
+				$("#modifyBtn").click(function() {
+					btnType = "modify";
+					target = "post";
+				});
+				
+				$("#deleteBtn").click(function() {
+					btnType = "delete";
+					target = "post";
+				});
+				
+				/* 패스워드 확인 관련 이벤트 끝*/
+				
+				/* 코멘트 관련 이벤트 */
+				
+				commentList();
+				
+				$("#commentInsert_btn").click(function() {
+					var insertData = $("#commentInsert").serialize();
+					commentInsert(insertData);
+				});
+				/* 코멘트 관련 이벤트 끝 */
+			});
+		
+			/* 코멘트 관련 메소드 */
+			function commentList() {
+				$.ajax({
+					url : '/board/comment/select.process',
+					type : 'get',
+					data : {'post_id' : /*[[${post.id}]]*/},
+					success : function(data) {
+						var html = '';
+						var commentCount = data.length;
+						var commentColor = '';
+						if(data.length > 0) {
+							var count = 0;
+							$.each(data, function(key, value) {
+								count++;
+								
+								if(count % 2 == 0)
+									commentColor = "#F2F2F2";
+								else
+									commentColor = "white";
+								
+								html += '<div id="commentArea" style="margin-bottom: 15px; background-color: ' + commentColor + ';">';
+								html += '<strong style="font-size: 20px; color: red;">' + count + '</strong>';
+								html += '<div id="commentInfo">' + ' 작성자 : ' + value.writer;
+								html += '<div id="commentBtnGroup' + value.id + '" class="btn-group btn-group-sm" role="group" style="float:right;">';
+								html += '<button type="button" class="btn btn-primary btn-sm" id="commentModify_btn" '
+								html += 'onclick="passwordCheck(' + value.id + ',\'' + value.content + '\',\'' 
+										+ value.password + '\',\'modify\');"> 수정 </button>';
+								html += '<button type="button" class="btn btn-danger btn-sm" id="commentDelete_btn" '
+								html += 'onclick="passwordCheck(' + value.id + ',\'' + value.content + '\',\'' 
+										+ value.password + '\',\'delete\');"> 삭제 </button>';
+								html += '</div>';
+								html += '<div id="commentContent' + value.id + '"><p> 내용 : ' + value.content + '</p>';
+								html += '</div>';
+								html += '</div>';
+
+							});
+						} else {
+							html += '<div>';
+							html += '<h6><strong>등록된 코멘트가 없습니다.</strong></h6>';
+							html += '</div';
+						}
+						
+						$("#commentCount").html(commentCount);
+						$("#commentList").html(html);
+					}
+				});
+			}
+			
+			function commentInsert(insertData) {
+				$.ajax({
+					url : '/board/comment/create.process',
+					type : 'post',
+					data : insertData,
+					success : function() {
+						commentList();
+						$("#comment_writer").val("");
+						$("#comment_pwd").val("");
+						$("#comment_content").val("");
+					}
+				});
+			}
+			
+			function passwordCheck(id, content, pwd, type) {
+				btnType = type;
+				target = "comment";
+				password = pwd;
+				
+				commentID = id;
+				commentContent = content;
+				
+				$("#passwordCheck").modal('show');
+			}
+			
+			function commentUpdate(id, content) {
+				var html = "";
+
+				var button = '<button type="button" class="btn btn-warning btn-sm" onclick="commentList();">뒤로</button>';
+				$("#commentBtnGroup" + id).html(button);
+								
+				
+				html += '<div class="input-group">';
+				html += '<input type="text" class="form-control" id="comment' + id + '_content" value="' + content + '"/>';
+				html += '<div><input type="password" class="form-control" id="comment' + id + '_pwd" placeholder="패스워드"/></div>'
+				html += '<span class="input-group-btn"><button class="btn btn-default btn-xs" type="button" onclick="commentUpdateProc(' 
+						+ id + ');">수정</button></span>';
+				html += '</div>';
+				
+				$("#commentContent" + id).html(html);
+			}
+			
+			function commentUpdateProc(id) {
+				var updateContent = $("#comment" + id + "_content").val();
+				var updatePassword = $("#comment" + id + "_pwd").val();
+				
+				$.ajax({
+					url : '/board/comment/update.process',
+					type : 'post',
+					data : {'content' : updateContent, 'id' : id, 'password' : updatePassword,},
+					success : function() {
+						alert("코멘트가 수정되었습니다.");
+						commentList();
+					}
+				}); 
+			}
+			
+			function commentDelete(id) {
+				$.ajax({
+					url : '/board/comment/delete.process',
+					type : 'post',
+					data : {'id' : id},
+					success : function() {
+						alert("코멘트가 삭제되었습니다.");
+						commentList();
+					}
+				});
+			}
+			/* 코멘트 관련 메소드 끝*/
+			
+		/*]]>*/
+	</script>
+
+	<div th:replace="/tags/footer :: footer"></div>
+</body>
+</html>

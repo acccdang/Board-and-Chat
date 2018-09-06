@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/tags/header :: header">
+<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+</head>
+<body>
+	<nav th:replace="/tags/navbar :: navbar"></nav>
+	<div th:replace="/tags/scripts :: scripts"></div>
+	
+	<script src="/webjars/sockjs-client/1.1.2/sockjs.min.js"></script>
+	<script src="/webjars/stomp-websocket/2.3.3-1/stomp.min.js"></script>
+	<script type="text/javascript" src="/js/chat_js.js"></script>
+	<link rel="stylesheet" href="/css/chat_css.css">
+	
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("#board").attr("class", "nav-link");
+			$("#chat").attr("class", "nav-link active");
+		});
+	</script>
+
+	<div class="container-fluid">
+		<div class="row" style="margin: 20px auto;">
+			<div class="col-md-6">
+				<form class="form-inline">
+					<div class="form-group">
+						<button id="connectBtn" class="btn btn-outline-primary" type="submit">입장</button>
+						<button id="disconnectBtn" class="btn btn-outline-danger" type="submit" disabled="disabled">퇴장</button>
+					</div>				
+				</form>
+			</div>		
+		</div>
+		<div class="row">
+			<div class="col-md-12 table-wrapper-scroll-y">
+				<table id="chatOutputRoom" class="table table-bordered">
+					<thead>
+						<tr>
+							<th>채팅방</th>
+						</tr>
+					</thead>
+					<tbody id="chatOutput"></tbody>				
+				</table>
+			</div>
+		</div>
+		<div class="col-md-12">
+			<form class="form-inline">
+				<div class="form-group">
+					<label id="name"></label>
+					<label> > </label>
+					<input type="text" id="message" class="form-control" placeholder="메시지 입력 .."/>					
+				</div>
+				<button id="sendBtn" class="btn btn-default" type="submit">Send</button>
+			</form>
+		</div>
+	</div>	
+	
+	<!-- Modal : talkerSetting -->
+	<div class="modal fade" id="talkerSetting" tabindex="-1" role="dialog" aria-labelledby="talkerSetting" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">닉네임 설정</h5>
+					<button type="button" class="close" name="talkerSetting_cancelBtn" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>				
+				</div>
+				<div class="modal-body">
+					<form>
+						<div class="form-group">
+							<label for="talkerSetting_input" class="col-form-label">닉네임 입력 : </label>
+							<input type="text" class="form-control" id="talkerSetting_input"/>
+							<label class="col-form-label" id="warningText"></label>
+						</div>
+					</form>				
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" id="talkerSetting_btn">확인</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal" name="talkerSetting_cancelBtn">취소</button>				
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script type="text/javascript" th:inline="javascript">
+		$(document).ready(function() {
+			$("#talkerSetting").modal("show");
+			
+			$("#talkerSetting").on("shown.bs.modal", function(event) {
+				$("#talkerSetting_input").trigger("focus");
+			});
+			
+			$("#talkerSetting").on("submit", function(event) {
+				event.preventDefault();
+				return false;
+			});
+			
+			$("#talkerSetting").keydown(function(event) {
+				if(event.keyCode == 13)
+					$("#talkerSetting_btn").click();
+				else if(event.keyCode == 27)
+					location.href = "/board/list";
+			});
+			
+			$("#talkerSetting_btn").click(function() {
+				var talker = $("#talkerSetting_input").val();
+				
+				if(talker == "") {
+					$("#warningText").fadeIn();
+					$("#warningText").text("닉네임을 설정해주세요.").css("color", "red").fadeOut(2000);
+				}
+				else {
+					$("#name").text(talker);
+					$("#talkerSetting").modal("hide");
+					connect();
+				}
+			});
+			
+			$("button[name=talkerSetting_cancelBtn]").click(function() {
+				location.href="/board/list";
+			});
+		});
+		
+	</script>
+	
+	<div th:replace="/tags/footer :: footer"></div>
+</body>
+</html>
