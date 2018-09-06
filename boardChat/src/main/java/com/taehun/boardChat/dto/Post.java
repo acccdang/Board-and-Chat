@@ -11,6 +11,7 @@ public class Post {
 	private String writer;
 	private String password;
 	private Date ctime;
+	private String ctimeS;
 	private Date mtime;
 	private boolean isDeleted;
 
@@ -72,6 +73,16 @@ public class Post {
 
 	public void setCtime(Date ctime) {
 		this.ctime = ctime;
+	}
+
+	
+
+	public String getCtimeS() {
+		return ctimeS;
+	}
+
+	public void setCtimeS(String ctimeS) {
+		this.ctimeS = ctimeS;
 	}
 
 	public Date getMtime() {

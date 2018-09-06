@@ -95,7 +95,7 @@
 								<span><img id="new_icon" src="" width="40"/></span>
 							</td>
 							<td style="width: 5%;" th:text="${notice.writer}">작성자</td>
-							<td id="notice_date" style="width: 5%;" th:text="${notice.ctime}">작성 날짜</td>
+							<td style="width: 5%;" th:text="${notice.ctimeS}">작성 날짜</td>
 						</tr>
 						<script type="text/javascript" th:inline="javascript">
 							/*<![CDATA[*/
@@ -111,9 +111,6 @@
 									$("#new_icon_" + dateCount).attr("src", "/image/newIcon.png")
 								else
 									$("#new_icon_" + dateCount).attr("src", "");
-								
-								$("#notice_date").attr("id", "notice_date_" + dateCount);
-								
 								/* new icon 끝 */		
 								
 								dateCount++;
@@ -129,11 +126,33 @@
 								<span th:if="${post.category == 'notice'}" style="color: red;">[공지]</span>
 								<span th:if="${post.category == 'common'}" style="color: gray;">[일반]</span>
 								<a th:href="@{|/board/view?id=${post.id}|}"><th:block th:text="${post.title}">제목</th:block></a>
-								<span><label style="color: gray;" th:text="@{|(${post.commentCount})|}">댓글 수</label></span>
+								<span><label style="color: gray; font-size: 80%" th:text="@{|(${post.commentCount})|}">댓글 수</label></span>
+								<span><img id="new_icon" src="" width="40"/></span>
 							</td>
 							<td style="width: 5%;" th:text="${post.writer}">작성자</td>
-							<td style="width: 5%;" th:text="${#dates.format(post.ctime, 'yy/MM/dd, HH:mm')}">작성 날짜</td>
+							<td style="width: 5%;" th:text="${post.ctimeS}">작성 날짜</td>
 						</tr>
+						<script type="text/javascript" th:inline="javascript">
+							/*<![CDATA[*/
+								var createdDate = new Date(/*[[${post.ctime}]]*/);
+								var date = new Date();
+								
+								/* new icon */
+								var diff = (date.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+								
+								console.log(diff);
+								
+								$("#new_icon").attr("id", "new_icon_" + dateCount);
+								
+								if(diff < 1)
+									$("#new_icon_" + dateCount).attr("src", "/image/newIcon.png")
+								else
+									$("#new_icon_" + dateCount).attr("src", "");
+								/* new icon 끝 */		
+								
+								dateCount++;
+							/*]]>*/
+						</script>
 					</th:block>
 				</tbody>
 			</table>

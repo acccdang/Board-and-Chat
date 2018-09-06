@@ -38,17 +38,16 @@
 			<include refid="search"></include>
 	</select>
 	
-	<!-- 게시글 일반 조회 (공지용) -->
+	<!-- 게시글  조회 (공지용) -->
 	<select id="selectNotice" resultType="com.taehun.boardChat.dto.Post">
-		SELECT id, title, category, content, writer, password, 
-			IF(date(ctime) = date(NOW()), DATE_FORMAT(ctime, "%H:%i"), DATE_FORMAT(ctime, "%Y.%m.%d")) AS ctime FROM posts
+		SELECT *, IF(date(ctime) = date(NOW()), DATE_FORMAT(ctime, "%H:%i"), DATE_FORMAT(ctime, "%Y.%m.%d")) AS ctimeS FROM posts
 		WHERE category = 'notice'
 		ORDER BY id DESC
 	</select>
 	
 	<!-- 게시글 조회 (게시글 용)-->
 	<select id="select" parameterType="map" resultType="com.taehun.boardChat.dto.Post">
-		SELECT * FROM posts
+		SELECT *, IF(date(ctime) = date(NOW()), DATE_FORMAT(ctime, "%H:%i"), DATE_FORMAT(ctime, "%Y.%m.%d")) AS ctimeS FROM posts
 			<include refid="search"></include>
 		ORDER BY id DESC
 		LIMIT #{topPostNum}, #{bottomPostNum}
