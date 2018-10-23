@@ -16,6 +16,7 @@ public class Post {
 	private boolean isDeleted;
 
 	private int commentCount;
+	private boolean isNew;
 	private String[] contents;		// 줄바꿈 가능하게 출력하기 위해
 
 	public int getId() {

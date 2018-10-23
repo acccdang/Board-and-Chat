@@ -44,7 +44,7 @@ public class BoardController {
 		/*******/
 		/* °Ë»ö */		
 		Map<String, Object> param = new HashMap<String, Object>();
-	
+		
 		param.put("page", page);
 		param.put("category", category);
 		param.put("option", option);
